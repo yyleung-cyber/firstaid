@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>樂華急救小先鋒 - 互動情境急救挑戰</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        /* 自訂捲軸樣式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* 脈衝動畫與呼吸燈 */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .emergency-badge {
+            animation: pulse-ring 2s infinite;
+        }
+        .item-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .item-card:hover {
+            transform: translateY(-2px);
+        }
+        .item-card.selected {
+            border-color: #0284c7;
+            background-color: #e0f2fe;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+        }
+        .chat-bubble-enter {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col">
+
+    <!-- 頂部導覽列 -->
+    <header class="bg-white shadow-sm border-b border-sky-100 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-red-500 text-white p-2 rounded-xl shadow-md flex items-center justify-center">
+                    <i class="fa-solid fa-kit-medical text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-black text-slate-800 tracking-wide">樂華急救小先鋒</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">高階思維情境急救訓練系統</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <!-- 已完成任務進度徽章 -->
+                <div id="header-progress-badge" class="text-xs sm:text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-medal text-amber-500"></i>
+                    <span id="header-progress-text">任務進度：0 / 2</span>
+                </div>
+                <!-- 衛生安全原則提示按鈕 -->
+                <button onclick="toggleSafetyModal()" class="text-xs sm:text-sm bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-heart"></i>
+                    <span>急救核心原則</span>
+                </button>
+                <!-- 切換關卡按鈕 -->
+                <button onclick="showScenarioSelector()" class="text-xs sm:text-sm bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-lg font-medium shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>選擇任務</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主遊戲容器 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- 關卡選擇畫面 (預設顯示) -->
+        <div id="scenario-selector" class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-sky-100 text-center max-w-3xl mx-auto">
+                <span class="inline-block bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full mb-3">任務簡報</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-800 mb-3">準備好成為「樂華急救小先鋒」了嗎？</h2>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    在接下來的校園突發狀況中，傷者需要你的冷靜判斷！請先評估現場與衛生安全，從急救箱中挑選合適的物品，並配對正確的處理步驟。<br>
+                    <strong class="text-sky-700">考核要求：同學必須成功完成「最少兩項」不同的急救任務，並通過現場的高階思維追問，才能正式成為「樂華急救小先鋒」！</strong>
+                </p>
+                <!-- 資格進度條 -->
+                <div id="selector-status-box" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-700">
+                    <i class="fa-solid fa-award text-amber-500 text-base"></i>
+                    <span id="selector-status-text">目前進度：已完成 0 / 2 項急救任務（還差 2 項即可獲得小先鋒稱號）</span>
+                </div>
+            </div>
+
+            <!-- 關卡卡片網格 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="scenario-cards">
+                <!-- 由 JS 動態生成 -->
+            </div>
+        </div>
+
+        <!-- 遊戲進行畫面 (預設隱藏) -->
+        <div id="game-workspace" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- 左側：傷者情境與蘇格拉底對話區 (佔 7 欄) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-sky-100 flex flex-col h-[78vh] min-h-[550px]">
+                
+                <!-- 傷者狀態頂部欄 -->
+                <div class="p-4 border-b border-slate-100 bg-slate-50/80 rounded-t-2xl flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div id="patient-avatar" class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl shadow-inner border-2 border-white">
+                            🤕
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 id="scenario-title" class="font-bold text-slate-800 text-base sm:text-lg">情境標題</h3>
+                                <span id="scenario-badge" class="emergency-badge bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">緊急狀況</span>
+                            </div>
+                            <p id="patient-info" class="text-xs text-slate-500">傷者資訊</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-slate-400 mb-1">處置進度</div>
+                        <div class="flex items-center gap-1" id="progress-dots">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 對話紀錄顯示區 -->
+                <div id="chat-history" class="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 bg-slate-50/30">
+                    <!-- 動態加入對話氣泡 -->
+                </div>
+
+                <!-- 過關結算橫幅 (過關時顯示) -->
+                <div id="victory-banner" class="hidden p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-t-2 border-emerald-300 text-emerald-900 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div id="victory-icon-box" class="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                            <i class="fa-solid fa-medal"></i>
+                        </div>
+                        <div>
+                            <h4 id="victory-title" class="font-black text-base sm:text-lg text-emerald-800">🎉 恭喜你，你已成為了樂華急救小先鋒！</h4>
+                            <p id="victory-desc" class="text-xs text-emerald-700 mt-0.5">你的急救步驟安全、衛生且完全符合科學原理，成功守護了同學的安全！</p>
+                        </div>
+                    </div>
+                    <button onclick="showScenarioSelector()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition shrink-0">
+                        返回任務列表 <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- 學生操作輸入區（配對選擇 + 蘇格拉底選項） -->
+                <div id="input-area" class="p-3.5 sm:p-4 border-t border-slate-100 bg-white rounded-b-2xl space-y-3">
+                    
+                    <!-- 模式 A：第一回合「急救步驟配對排序器」 -->
+                    <div id="step-builder-panel" class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span class="bg-sky-600 text-white w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px]">1</span>
+                                點選急救步驟（依先後順序配對）：
+                            </span>
+                            <button onclick="clearSelectedSteps()" class="text-[11px] text-slate-400 hover:text-red-500 transition">
+                                <i class="fa-solid fa-rotate-left mr-0.5"></i>重排步驟
+                            </button>
+                        </div>
+                        
+                        <!-- 已排好的步驟序列槽 -->
+                        <div id="ordered-steps-bar" class="min-h-[38px] p-2 rounded-xl bg-slate-50 border border-dashed border-sky-300 flex flex-wrap items-center gap-1.5">
+                            <span class="text-xs text-slate-400">請從下方點選動作卡片，按順序排好急救流程...</span>
+                        </div>
+
+                        <!-- 候選步驟動作卡片池 -->
+                        <div id="step-options-pool" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                            <!-- 由 JS 動態生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 模式 B：第二回合起「蘇格拉底追問思維選項卡片」 -->
+                    <div id="socratic-choices-panel" class="hidden space-y-2">
+                        <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-brain text-amber-500"></i>
+                            <span>請選擇你的處理決定或原因解釋（可搭配右側更換急救物品）：</span>
+                        </div>
+                        <div id="socratic-options-list" class="grid grid-cols-1 gap-2">
+                            <!-- 由 AI 動態生成高階思維選項 -->
+                        </div>
+                    </div>
+
+                    <!-- 已選急救箱物品標籤預覽 -->
+                    <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 min-h-[26px]" id="selected-items-bar">
+                        <span class="text-xs text-slate-400 flex items-center gap-1">
+                            <i class="fa-solid fa-hand-pointer"></i> 右側急救箱已選物品：無
+                        </span>
+                    </div>
+
+                    <!-- 補充說明與送出列 -->
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="student-input" 
+                            class="flex-1 border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                            placeholder="（選填）補充你的想法或理由...">
+                        <button id="submit-btn" onclick="submitAction()" 
+                            class="bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>確認送出</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側：樂華校園急救箱 (佔 5 欄) -->
+            <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-sky-100 p-4 sm:p-5 flex flex-col h-[78vh] min-h-[550px]">
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase-medical text-red-500 text-lg"></i>
+                        <h3 class="font-bold text-slate-800 text-base sm:text-lg">樂華標準急救箱</h3>
+                    </div>
+                    <button onclick="clearSelectedItems()" class="text-xs text-slate-400 hover:text-red-500 transition">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>清空已選
+                    </button>
+                </div>
+                
+                <p class="text-xs text-slate-500 mb-3">
+                    點擊選取你要使用的物品（注意：箱內包含<span class="text-amber-600 font-medium">干擾物品</span>，請謹慎判斷！）：
+                </p>
+
+                <!-- 急救箱物品網格 -->
+                <div id="first-aid-kit-grid" class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2.5 pr-1">
+                    <!-- 由 JS 動態生成物品卡片 -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 急救核心原則提示彈窗 (Modal) -->
+    <div id="safety-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-black text-lg text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-book-medical text-sky-600"></i>
+                    <span>急救衛生與核心原則備忘錄</span>
+                </h3>
+                <button onclick="toggleSafetyModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm text-slate-600 max-h-[60vh] overflow-y-auto pr-1">
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                    <div class="font-bold text-amber-800 mb-1"><i class="fa-solid fa-hands-bubbles mr-1"></i> 首要原則：衛生與安全（自律表現）</div>
+                    <p class="text-xs text-amber-700">接觸傷口或體液前，務必<strong>先清潔雙手並戴上即棄手套</strong>，保護自己也避免傷口受到交叉感染。</p>
+                </div>
+                <div class="p-3 bg-sky-50 rounded-xl border border-sky-100">
+                    <div class="font-bold text-sky-800 mb-1">1. 輕微割傷 / 擦傷</div>
+                    <p class="text-xs text-sky-700"><strong>清洗</strong>（生理鹽水 / 清水） ➔ <strong>消毒</strong> ➔ <strong>覆蓋</strong>（無菌紗布 / 消毒膠布）。避免使用會掉毛絮的棉花球直接擦拭傷口。</p>
+                </div>
+                <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <div class="font-bold text-indigo-800 mb-1">2. 扭傷 / 撞傷</div>
+                    <p class="text-xs text-indigo-700">扭傷：<strong>承托受傷部位 ➔ 冷敷</strong>。<br>撞傷：<strong>冷敷</strong>（使用冰袋時建議用毛巾包裹，避免直接凍傷皮膚）。</p>
+                </div>
+                <div class="p-3 bg-rose-50 rounded-xl border border-rose-100">
+                    <div class="font-bold text-rose-800 mb-1">3. 輕微燙傷（沖、脫、蓋）</div>
+                    <p class="text-xs text-rose-700"><strong>沖</strong>（流動清水沖洗 10-15 分鐘降溫） ➔ <strong>脫</strong>（小心除去飾物/衣物，切勿強行撕開黏連衣物） ➔ <strong>蓋</strong>（清潔敷料覆蓋）。切勿直接用冰塊敷在燙傷處！</p>
+                </div>
+            </div>
+            <div class="pt-2 text-right">
+                <button onclick="toggleSafetyModal()" class="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold rounded-xl transition">
+                    我明白了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自訂訊息提示框 (取代 alert) -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-800 text-white px-4 py-3 rounded-xl shadow-lg text-sm flex items-center gap-2.5">
+            <i id="toast-icon" class="fa-solid fa-circle-info text-sky-400"></i>
+            <span id="toast-msg">提示訊息</span>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 遊戲資料定義（急救箱物品與情境關卡）
+        // ==========================================
+        const FIRST_AID_ITEMS = [
+            { id: 'gloves', name: '即棄無菌手套', icon: '🧤', desc: '隔離體液，防止交叉感染' },
+            { id: 'saline', name: '生理鹽水', icon: '💧', desc: '溫和沖洗傷口污垢，不刺激組織' },
+            { id: 'antiseptic', name: '消毒藥水(碘伏/洗必泰)', icon: '🧴', desc: '殺滅傷口周圍細菌' },
+            { id: 'gauze', name: '無菌紗布敷料', icon: '🩹', desc: '覆蓋並保護傷口，不留纖維' },
+            { id: 'plaster', name: '無菌消毒膠布', icon: '🩹', desc: '適合小型割傷或擦傷覆蓋' },
+            { id: 'cotton', name: '普通脫脂棉花球', icon: '☁️', desc: '吸水性強，但易殘留棉絮纖維' },
+            { id: 'icepack', name: '冰袋 / 冷敷墊', icon: '🧊', desc: '減輕腫脹與疼痛（需隔毛巾使用）' },
+            { id: 'bandage', name: '彈性繃帶 / 三角巾', icon: '🎗️', desc: '固定敷料或承托扭傷部位' },
+            { id: 'tape', name: '醫用透氣膠紙', icon: '🧻', desc: '用於固定無菌紗布' },
+            { id: 'alcohol', name: '75% 消毒火酒', icon: '🧪', desc: '刺激性極強，適合器具消毒' },
+            { id: 'ointment', name: '不明藥膏 / 牙膏', icon: '🪥', desc: '民間偏方或非無菌外用膏' },
+            { id: 'water_tap', name: '現場流動清水(水龍頭)', icon: '🚰', desc: '大量持續降溫與沖洗（非箱內物品但可使用）' }
+        ];
+
+        const SCENARIOS = [
+            {
+                id: 'cut_abrasion',
+                title: '操場跌倒擦傷膝蓋',
+                category: '輕微割傷 / 擦傷',
+                difficulty: '初級挑戰 ⭐',
+                avatar: '🏃‍♂️',
+                patientName: '小樂（四年級同學）',
+                location: '學校操場跑道旁',
+                description: '小樂在跑步時不小心絆倒，右邊膝蓋擦破了皮，滲出一些血絲，傷口表面還沾有一點沙塵。他痛得坐在地上皺著眉頭。',
+                openingLine: '「哎呀好痛啊！我的膝蓋流血了，上面好像還有沙子……小先鋒，請幫我配對好急救步驟順序，並從右側急救箱挑選需要的物品！」',
+                stepPool: [
+                    { id: 'wash_hands_gloves', label: '清潔雙手並戴上即棄手套', icon: '🧤' },
+                    { id: 'rinse_wound', label: '沖洗傷口上的沙塵污垢', icon: '💧' },
+                    { id: 'disinfect_wound', label: '用消毒藥水清潔傷口', icon: '🧴' },
+                    { id: 'cover_wound', label: '用敷料覆蓋保護傷口', icon: '🩹' },
+                    { id: 'blow_wound', label: '用嘴巴吹氣幫傷口止痛', icon: '💨' },
+                    { id: 'wipe_hard', label: '用力擦拭掉傷口血痂', icon: '🧽' }
+                ],
+                pedagogicalFocus: `
+                    【教學標準與高階追問重點】：
+                    1. 衛生安全原則：必須先強調「清潔雙手 / 戴上即棄手套」（體現自律與防感染）。若學生沒排在第一位或漏選，傷者要追問並提供反思選項！
+                    2. 處理順序：清洗（生理鹽水或清水沖走沙塵）➔ 消毒（溫和消毒藥水）➔ 覆蓋（無菌紗布或消毒膠布）。
+                    3. 常見迷思與高階追問：
+                       - 若學生選「普通脫脂棉花球」：追問「你用棉花球幫我抹傷口，但如果棉花纖維黏在傷口上怎麼辦？急救箱裡有更好的選擇嗎？」
+                       - 若學生選「75% 消毒火酒」直接擦傷口：追問「哇好刺痛！火酒刺激性這麼強，會不會破壞我傷口的新生細胞？有沒有更溫和的選擇？」
+                       - 若學生第一步全部排對：也要進行一輪「高階原理追問」，例如追問「為什麼一定要『先戴手套』以及『先沖洗再覆蓋』，而不是直接貼膠布？」並提供 3 個誘答選項（包含常見迷思選項與正確科學原理選項）。
+                `
+            },
+            {
+                id: 'scald_burn',
+                title: '茶水間打翻熱水燙傷',
+                category: '輕微燙傷（沖、脫、蓋）',
+                difficulty: '中級挑戰 ⭐⭐',
+                avatar: '🥵',
+                patientName: '陳同學（五年級）',
+                location: '學校醫療室外的茶水間',
+                description: '陳同學倒溫熱水時不小心灑在左手手背上，手背立刻變得紅紅的，感覺火辣辣地痛，手腕上還戴著一隻電子手錶。',
+                openingLine: '「好燙好燙！我的手背好辣！請先幫我配對正確的處理順序，並從右側選擇要用的物品或現場設備！」',
+                stepPool: [
+                    { id: 'flush_water', label: '用流動清水沖洗 10-15 分鐘', icon: '🚰' },
+                    { id: 'remove_watch', label: '小心除去手腕上的電子手錶', icon: '⌚' },
+                    { id: 'cover_clean', label: '用清潔無菌敷料輕輕覆蓋', icon: '🩹' },
+                    { id: 'apply_ice', label: '直接用冰塊敷在燙傷紅腫處', icon: '🧊' },
+                    { id: 'apply_toothpaste', label: '塗上藥膏或牙膏降溫散熱', icon: '🪥' },
+                    { id: 'pop_blister', label: '如果起水泡立刻刺破擠出水', icon: '📌' }
+                ],
+                pedagogicalFocus: `
+                    【教學標準與高階追問重點】：
+                    1. 核心三步驟：沖（流動清水沖洗 10-15 分鐘降溫）➔ 脫（小心除去手錶/飾物，若衣物黏連切勿強行撕開）➔ 蓋（清潔無菌敷料覆蓋）。
+                    2. 關鍵高階追問（必考原理）：
+                       - 追問：「為什麼處理燙傷時必須先用流動清水沖洗 10-15 分鐘，而不能直接用冰塊敷在傷口上？」（選項中應包含：A. 冰塊溫度過低會引致凍傷及血管急劇收縮，加劇皮膚組織受損 [正確]；B. 冰塊太硬會壓扁水泡 [干擾項]；C. 清水沖洗比較省錢方便 [干擾項]）。
+                       - 若學生漏掉「除去手錶」，追問：「我的手背開始腫脹了，手腕上的手錶不拿下來會有什麼危險？」
+                `
+            },
+            {
+                id: 'sprain_bruise',
+                title: '籃球場跳起落地扭傷腳踝',
+                category: '扭傷與撞傷處理',
+                difficulty: '中級挑戰 ⭐⭐',
+                avatar: '🏀',
+                patientName: '阿華（六年級籃球隊員）',
+                location: '學校有蓋操場籃球場',
+                description: '阿華搶籃板落地時右腳踝「啪」一聲扭到了，小腿也撞到了旁邊的長椅，現在腳踝腫了起來，一踩地就劇痛。',
+                openingLine: '「嘶……我的右腳踝好痛，好像腫起來了！請配對你的處理步驟並挑選右側急救箱物品幫我處理！」',
+                stepPool: [
+                    { id: 'rest_support', label: '停止運動並承托固定受傷腳踝', icon: '🎗️' },
+                    { id: 'cold_compress', label: '使用冰袋進行冷敷消腫', icon: '🧊' },
+                    { id: 'massage_ankle', label: '用力揉按腫脹處幫助散瘀', icon: '👐' },
+                    { id: 'hot_compress', label: '熱敷促進血液循環', icon: '♨️' },
+                    { id: 'walk_test', label: '試著單腳跳或用力踩地測試', icon: '🦶' },
+                    { id: 'clean_gloves', label: '先評估現場安全並安撫傷者', icon: '🛡️' }
+                ],
+                pedagogicalFocus: `
+                    【教學標準與高階追問重點】：
+                    1. 核心原則：扭傷需「承托受傷部位（休息固定）」➔「冷敷」；撞傷需「冷敷」。
+                    2. 常見迷思與高階追問：
+                       - 針對「揉一揉/熱敷」或冷敷原理：追問「剛扭傷時微絲血管正在破裂出血，為什麼我們要選擇『承托與冷敷』而不是『揉按或熱敷』？」
+                       - 針對「冷敷」安全細節：追問「把冰袋直接貼在皮膚上冷敷二十分鐘會有什麼問題？應該怎麼做？」
+                `
+            },
+            {
+                id: 'nosebleed',
+                title: '炎熱天氣操場集隊流鼻血',
+                category: '流鼻血緊急處理',
+                difficulty: '進階挑戰 ⭐⭐⭐',
+                avatar: '🩸',
+                patientName: '美美（三年級同學）',
+                location: '學校操場',
+                description: '天氣乾燥炎熱，美美集隊時突然流鼻血，鮮血順著鼻孔流下來，她緊張得想把頭往後仰。',
+                openingLine: '「嗚……我流鼻血了！請你配對正確的處理步驟，告訴我應該怎麼做！」',
+                stepPool: [
+                    { id: 'wear_gloves', label: '戴上即棄無菌手套做好防護', icon: '🧤' },
+                    { id: 'lean_forward', label: '坐下並將身體及頭部微微前傾', icon: '🙇‍♀️' },
+                    { id: 'pinch_soft', label: '用手指捏住鼻翼兩側軟骨 10 分鐘', icon: '🤏' },
+                    { id: 'tilt_back', label: '把頭向後仰防止鼻血滴落地上', icon: '🙄' },
+                    { id: 'pinch_bridge', label: '用力按壓兩眼之間的鼻樑硬骨', icon: '👃' },
+                    { id: 'stuff_cotton', label: '把棉花球緊緊塞進鼻孔裡止血', icon: '☁️' }
+                ],
+                pedagogicalFocus: `
+                    【教學標準與高階追問重點】：
+                    1. 正確姿勢：戴手套防護 ➔ 坐下、身體微微向前傾（切勿後仰）、張口呼吸 ➔ 捏住「鼻翼兩側（軟骨部位）」持續 10 分鐘。
+                    2. 高階追問：
+                       - 若學生選「頭向後仰」或「按住鼻樑硬骨」：追問「你現在幫我按住鼻樑骨（或讓我頭向後仰），為什麼血還是止不住，甚至流進喉嚨裡？」
+                       - 若學生選「棉花球塞進鼻孔」：追問「如果把棉花球塞進鼻孔，等一下血乾了拔出來時會發生什麼事？」
+                       - 即使排對，也要追問：「為什麼要捏住『鼻翼兩側軟骨』而不是『鼻樑硬骨』，而且頭要『微微前傾』？」
+                `
+            }
+        ];
+
+        // ==========================================
+        // 2. 遊戲狀態管理
+        // ==========================================
+        let currentScenario = null;
+        let completedScenarioIds = new Set(); // 追蹤學生已成功完成的急救項目 ID
+        let selectedItemIds = new Set();
+        let selectedStepIds = []; // 儲存學生依序點選的步驟 ID
+        let selectedChoiceText = ''; // 儲存學生在追問階段點選的選項文字
+        let currentSocraticOptions = []; // 儲存目前 AI 提供的選項列表
+        let conversationHistory = [];
+        let turnCount = 0;
+        let isSolved = false;
+        let isWaitingAI = false;
+
+        // ==========================================
+        // 3. 初始化與畫面渲染
+        // ==========================================
+        window.onload = function() {
+            updateOverallProgressUI();
+            renderScenarioCards();
+            renderFirstAidKit();
+        };
+
+        // 更新整體完成任務數量與小先鋒稱號狀態
+        function updateOverallProgressUI() {
+            const count = completedScenarioIds.size;
+            const headerText = document.getElementById('header-progress-text');
+            const headerBadge = document.getElementById('header-progress-badge');
+            const selectorText = document.getElementById('selector-status-text');
+            const selectorBox = document.getElementById('selector-status-box');
+
+            if (count >= 2) {
+                headerText.textContent = `🏅 樂華急救小先鋒（已完成 ${count} 項）`;
+                headerBadge.className = 'text-xs sm:text-sm bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-lg font-black flex items-center gap-1.5 shadow-sm';
+                selectorText.textContent = `🎉 恭喜你，你已成為了樂華急救小先鋒！（累計完成 ${count} 項急救任務）`;
+                selectorBox.className = 'mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs sm:text-sm font-black text-emerald-800 shadow-sm';
+            } else {
+                const remaining = 2 - count;
+                headerText.textContent = `任務進度：${count} / 2`;
+                headerBadge.className = 'text-xs sm:text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5';
+                selectorText.textContent = `目前進度：已完成 ${count} / 2 項急救任務（再完成 ${remaining} 項即可成為樂華急救小先鋒！）`;
+                selectorBox.className = 'mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50/80 border border-amber-200 text-xs sm:text-sm font-bold text-amber-800';
+            }
+        }
+
+        // 渲染關卡選擇卡片
+        function renderScenarioCards() {
+            const container = document.getElementById('scenario-cards');
+            container.innerHTML = SCENARIOS.map(sc => {
+                const isDone = completedScenarioIds.has(sc.id);
+                return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border ${isDone ? 'border-emerald-300 bg-emerald-50/20' : 'border-sky-100'} hover:border-sky-400 hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700">${sc.category}</span>
+                            ${isDone 
+                                ? '<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700"><i class="fa-solid fa-circle-check mr-1"></i>已完成救援</span>' 
+                                : `<span class="text-xs font-medium text-amber-600">${sc.difficulty}</span>`
+                            }
+                        </div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl ${isDone ? 'bg-emerald-100' : 'bg-slate-100'} flex items-center justify-center text-2xl shrink-0">
+                                ${sc.avatar}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800 leading-tight">${sc.title}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot mr-1 text-red-400"></i>${sc.location}</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-4">${sc.description}</p>
+                    </div>
+                    <button onclick="startScenario('${sc.id}')" class="w-full py-2.5 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-sky-600 hover:bg-sky-700'} text-white font-bold rounded-xl text-sm shadow-sm transition flex items-center justify-center gap-2">
+                        <span>${isDone ? '再次練習此情境' : '進入現場救援'}</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染右側急救箱物品網格與已選物品標籤列
+        function renderFirstAidKit() {
+            const gridEl = document.getElementById('first-aid-kit-grid');
+            const selectedBarEl = document.getElementById('selected-items-bar');
+            if (!gridEl || !selectedBarEl) return;
+
+            gridEl.innerHTML = FIRST_AID_ITEMS.map(item => {
+                const isSelected = selectedItemIds.has(item.id);
+                return `
+                    <button type="button" onclick="toggleItem('${item.id}')"
+                        class="item-card text-left p-3 rounded-xl border ${isSelected ? 'selected border-sky-500 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-300'} flex flex-col justify-between gap-1.5 relative">
+                        ${isSelected ? '<span class="absolute top-2 right-2 text-sky-600 text-xs"><i class="fa-solid fa-circle-check"></i></span>' : ''}
+                        <div class="flex items-center gap-2 pr-4">
+                            <span class="text-xl shrink-0">${item.icon}</span>
+                            <span class="font-bold text-xs sm:text-sm text-slate-800 leading-snug">${item.name}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-tight">${item.desc}</p>
+                    </button>
+                `;
+            }).join('');
+
+            if (selectedItemIds.size === 0) {
+                selectedBarEl.innerHTML = `
+                    <span class="text-xs text-slate-400 flex items-center gap-1">
+                        <i class="fa-solid fa-hand-pointer"></i> 右側急救箱已選物品：無
+                    </span>
+                `;
+            } else {
+                const tagsHtml = Array.from(selectedItemIds).map(id => {
+                    const item = FIRST_AID_ITEMS.find(i => i.id === id);
+                    if (!item) return '';
+                    return `
+                        <span class="inline-flex items-center gap-1 bg-sky-100 text-sky-800 border border-sky-200 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            <span>${item.icon} ${item.name}</span>
+                            <button type="button" onclick="toggleItem('${item.id}')" class="hover:text-red-500 ml-0.5">
+                                <i class="fa-solid fa-xmark text-[10px]"></i>
+                            </button>
+                        </span>
+                    `;
+                }).join('');
+
+                selectedBarEl.innerHTML = `
+                    <span class="text-xs font-bold text-slate-600 mr-1">已選物品：</span>
+                    ${tagsHtml}
+                `;
+            }
+        }
+
+        // 渲染第一回合「急救步驟配對排序器」
+        function renderStepBuilder() {
+            const orderedBarEl = document.getElementById('ordered-steps-bar');
+            const poolEl = document.getElementById('step-options-pool');
+            if (!orderedBarEl || !poolEl || !currentScenario) return;
+
+            if (selectedStepIds.length === 0) {
+                orderedBarEl.innerHTML = `<span class="text-xs text-slate-400">請從下方點選動作卡片，按順序排好急救流程...</span>`;
+            } else {
+                orderedBarEl.innerHTML = selectedStepIds.map((id, idx) => {
+                    const step = currentScenario.stepPool.find(s => s.id === id);
+                    if (!step) return '';
+                    return `
+                        <div class="inline-flex items-center gap-1.5 bg-sky-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                            <span class="bg-white text-sky-700 w-4 h-4 rounded-full inline-flex items-center justify-center text-[10px] font-black">${idx + 1}</span>
+                            <span>${step.icon} ${step.label}</span>
+                            <button type="button" onclick="toggleStep('${step.id}')" class="text-sky-200 hover:text-white ml-0.5">
+                                <i class="fa-solid fa-xmark text-[10px]"></i>
+                            </button>
+                        </div>
+                        ${idx < selectedStepIds.length - 1 ? '<i class="fa-solid fa-arrow-right text-sky-400 text-xs"></i>' : ''}
+                    `;
+                }).join('');
+            }
+
+            poolEl.innerHTML = currentScenario.stepPool.map(step => {
+                const orderIdx = selectedStepIds.indexOf(step.id);
+                const isSelected = orderIdx !== -1;
+                return `
+                    <button type="button" onclick="toggleStep('${step.id}')"
+                        class="text-left p-2 rounded-xl border ${isSelected ? 'border-sky-500 bg-sky-50 text-sky-900 shadow-sm' : 'border-slate-200 bg-white hover:border-sky-400 text-slate-700'} transition flex items-center gap-2 relative">
+                        ${isSelected 
+                            ? `<span class="w-5 h-5 rounded-full bg-sky-600 text-white font-black text-[11px] flex items-center justify-center shrink-0">${orderIdx + 1}</span>` 
+                            : `<span class="text-base shrink-0">${step.icon}</span>`
+                        }
+                        <span class="text-xs font-medium leading-tight">${step.label}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function toggleStep(stepId) {
+            if (isSolved || isWaitingAI) return;
+            const idx = selectedStepIds.indexOf(stepId);
+            if (idx !== -1) {
+                selectedStepIds.splice(idx, 1);
+            } else {
+                selectedStepIds.push(stepId);
+            }
+            renderStepBuilder();
+        }
+
+        function clearSelectedSteps() {
+            if (isSolved || isWaitingAI) return;
+            selectedStepIds = [];
+            renderStepBuilder();
+        }
+
+        function renderSocraticOptions(options) {
+            currentSocraticOptions = options || [];
+            selectedChoiceText = '';
+            const listEl = document.getElementById('socratic-options-list');
+            const labels = ['A', 'B', 'C', 'D'];
+
+            listEl.innerHTML = currentSocraticOptions.map((opt, idx) => `
+                <button type="button" onclick="selectSocraticOption(${idx})" id="socratic-opt-${idx}"
+                    class="socratic-opt-btn w-full text-left p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-400 hover:bg-sky-50/50 transition flex items-start gap-2.5">
+                    <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0 mt-0.5 opt-badge">
+                        ${labels[idx] || idx + 1}
+                    </span>
+                    <span class="text-xs sm:text-sm text-slate-700 leading-relaxed flex-1">${escapeHtml(opt)}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectSocraticOption(idx) {
+            if (isSolved || isWaitingAI) return;
+            selectedChoiceText = currentSocraticOptions[idx];
+            const buttons = document.querySelectorAll('.socratic-opt-btn');
+            buttons.forEach((btn, i) => {
+                const badge = btn.querySelector('.opt-badge');
+                if (i === idx) {
+                    btn.className = 'socratic-opt-btn w-full text-left p-2.5 sm:p-3 rounded-xl border-2 border-sky-500 bg-sky-50 transition flex items-start gap-2.5 shadow-sm';
+                    badge.className = 'w-6 h-6 rounded-lg bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0 mt-0.5 opt-badge';
+                } else {
+                    btn.className = 'socratic-opt-btn w-full text-left p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-400 transition flex items-start gap-2.5';
+                    badge.className = 'w-6 h-6 rounded-lg bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0 mt-0.5 opt-badge';
+                }
+            });
+        }
+
+        // ==========================================
+        // 4. 互動控制邏輯
+        // ==========================================
+        function toggleItem(id) {
+            if (isSolved || isWaitingAI) return;
+            if (selectedItemIds.has(id)) {
+                selectedItemIds.delete(id);
+            } else {
+                selectedItemIds.add(id);
+            }
+            renderFirstAidKit();
+        }
+
+        function clearSelectedItems() {
+            if (isSolved || isWaitingAI) return;
+            selectedItemIds.clear();
+            renderFirstAidKit();
+        }
+
+        function toggleSafetyModal() {
+            const modal = document.getElementById('safety-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function showToast(msg, isError = false) {
+            const box = document.getElementById('toast-box');
+            const icon = document.getElementById('toast-icon');
+            const text = document.getElementById('toast-msg');
+            text.textContent = msg;
+            icon.className = isError ? 'fa-solid fa-circle-exclamation text-red-400' : 'fa-solid fa-circle-info text-sky-400';
+            box.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                box.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function showScenarioSelector() {
+            updateOverallProgressUI();
+            renderScenarioCards();
+            document.getElementById('scenario-selector').classList.remove('hidden');
+            document.getElementById('game-workspace').classList.add('hidden');
+        }
+
+        // 開始指定關卡
+        function startScenario(scenarioId) {
+            currentScenario = SCENARIOS.find(s => s.id === scenarioId);
+            if (!currentScenario) return;
+
+            selectedItemIds.clear();
+            selectedStepIds = [];
+            selectedChoiceText = '';
+            currentSocraticOptions = [];
+            conversationHistory = [];
+            turnCount = 0;
+            isSolved = false;
+            isWaitingAI = false;
+
+            // 更新 UI 狀態
+            document.getElementById('scenario-selector').classList.add('hidden');
+            document.getElementById('game-workspace').classList.remove('hidden');
+            document.getElementById('victory-banner').classList.add('hidden');
+            document.getElementById('input-area').classList.remove('hidden');
+            document.getElementById('student-input').value = '';
+
+            // 顯示第一回合「步驟配對排序器」，隱藏第二回合「蘇格拉底選項」
+            document.getElementById('step-builder-panel').classList.remove('hidden');
+            document.getElementById('socratic-choices-panel').classList.add('hidden');
+
+            document.getElementById('patient-avatar').textContent = currentScenario.avatar;
+            document.getElementById('scenario-title').textContent = currentScenario.title;
+            document.getElementById('patient-info').textContent = `${currentScenario.patientName} ｜ 地點：${currentScenario.location}`;
+            
+            updateProgressDots(1);
+            renderFirstAidKit();
+            renderStepBuilder();
+
+            // 清空並加入初始情境描述與傷者對話
+            const chatHistoryEl = document.getElementById('chat-history');
+            chatHistoryEl.innerHTML = '';
+
+            appendSystemBanner(`📍 現場狀況：${currentScenario.description}`);
+            appendChatBubble('patient', currentScenario.openingLine);
+
+            // 記錄初始對話到歷史
+            conversationHistory.push({
+                role: 'model',
+                parts: [{ text: JSON.stringify({
+                    reply: currentScenario.openingLine,
+                    thinking_hint: "請先從下方點選步驟排好先後順序，並從右側急救箱挑選物品",
+                    socratic_options: [],
+                    is_resolved: false,
+                    progress_stage: 1
+                })}]
+            });
+        }
+
+        function updateProgressDots(stage) {
+            const dots = document.getElementById('progress-dots').children;
+            for (let i = 0; i < dots.length; i++) {
+                if (i < stage) {
+                    dots[i].className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 transition-colors';
+                } else {
+                    dots[i].className = 'w-2.5 h-2.5 rounded-full bg-slate-200 transition-colors';
+                }
+            }
+        }
+
+        // ==========================================
+        // 5. 對話 UI 渲染輔助函數
+        // ==========================================
+        function appendSystemBanner(text) {
+            const chat = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            div.className = 'bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs sm:text-sm p-3.5 rounded-xl leading-relaxed chat-bubble-enter';
+            div.textContent = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function appendChatBubble(sender, text, itemsList = [], hintText = '') {
+            const chat = document.getElementById('chat-history');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex flex-col ${sender === 'student' ? 'items-end' : 'items-start'} chat-bubble-enter`;
+
+            if (sender === 'student') {
+                const itemsHtml = itemsList.length > 0 
+                    ? `<div class="flex flex-wrap gap-1 mb-1.5 justify-end">
+                        ${itemsList.map(name => `<span class="bg-sky-700/80 text-sky-50 text-[11px] px-2 py-0.5 rounded-md">🧰 ${name}</span>`).join('')}
+                       </div>`
+                    : `<div class="text-[11px] text-sky-200 mb-1">（未選取急救箱物品）</div>`;
+
+                wrapper.innerHTML = `
+                    <div class="max-w-[85%] bg-sky-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
+                        ${itemsHtml}
+                        <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+                    </div>
+                    <span class="text-[11px] text-slate-400 mt-1 mr-1">樂華急救小先鋒（你）</span>
+                `;
+            } else {
+                const hintHtml = hintText 
+                    ? `<div class="mt-2.5 pt-2 border-t border-slate-100 text-xs text-sky-700 flex items-start gap-1.5">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 shrink-0"></i>
+                        <span><strong>思維小提示：</strong>${escapeHtml(hintText)}</span>
+                       </div>`
+                    : '';
+
+                wrapper.innerHTML = `
+                    <div class="flex items-end gap-2 max-w-[88%]">
+                        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-base shrink-0 mb-4">
+                            ${currentScenario.avatar}
+                        </div>
+                        <div>
+                            <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                                <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+                                ${hintHtml}
+                            </div>
+                            <span class="text-[11px] text-slate-400 mt-1 ml-1">${currentScenario.patientName}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            chat.appendChild(wrapper);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function appendLoadingBubble() {
+            const chat = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            div.id = 'ai-loading-bubble';
+            div.className = 'flex items-end gap-2 chat-bubble-enter';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-base shrink-0">
+                    ${currentScenario.avatar}
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
+                    <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
+                    <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+                </div>
+            `;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function removeLoadingBubble() {
+            const el = document.getElementById('ai-loading-bubble');
+            if (el) el.remove();
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ==========================================
+        // 6. Gemini API 蘇格拉底式高階追問引擎
+        // ==========================================
+        async function submitAction() {
+            if (isWaitingAI || isSolved) return;
+
+            const inputEl = document.getElementById('student-input');
+            const extraNote = inputEl.value.trim();
+            let studentActionSummary = '';
+
+            if (turnCount === 0) {
+                // 第一回合：檢查是否已排好步驟配對
+                if (selectedStepIds.length === 0 && !extraNote) {
+                    showToast('請先點選下方的急救步驟卡片排好順序！', true);
+                    return;
+                }
+                const orderedStepTexts = selectedStepIds.map((id, idx) => {
+                    const st = currentScenario.stepPool.find(s => s.id === id);
+                    return `步驟${idx + 1}：${st ? st.label : id}`;
+                });
+                studentActionSummary = orderedStepTexts.length > 0 
+                    ? `【配對急救流程】\n${orderedStepTexts.join(' ➔ ')}${extraNote ? `\n【補充說明】${extraNote}` : ''}`
+                    : extraNote;
+            } else {
+                // 第二回合起：檢查是否已點選蘇格拉底選項或輸入文字
+                if (!selectedChoiceText && !extraNote) {
+                    showToast('請點選一個回答選項（或輸入你的想法）！', true);
+                    return;
+                }
+                studentActionSummary = [
+                    selectedChoiceText ? `【選擇回答】${selectedChoiceText}` : '',
+                    extraNote ? `【補充理由】${extraNote}` : ''
+                ].filter(Boolean).join('\n');
+            }
+
+            // 取得已選物品名稱
+            const chosenItems = Array.from(selectedItemIds).map(id => {
+                const item = FIRST_AID_ITEMS.find(i => i.id === id);
+                return item ? item.name : id;
+            });
+
+            // 顯示學生訊息
+            appendChatBubble('student', studentActionSummary, chosenItems);
+            inputEl.value = '';
+            turnCount++;
+
+            // 組合給模型的訊息
+            const userPromptText = `
+【學生本回合選擇的急救箱物品】：${chosenItems.length > 0 ? chosenItems.join('、') : '（未選擇任何物品）'}
+${studentActionSummary}
+            `.trim();
+
+            conversationHistory.push({
+                role: 'user',
+                parts: [{ text: userPromptText }]
+            });
+
+            // 鎖定介面並顯示載入動畫
+            isWaitingAI = true;
+            document.getElementById('submit-btn').disabled = true;
+            appendLoadingBubble();
+
+            try {
+                const aiResponse = await callGeminiSocraticTutor();
+                removeLoadingBubble();
+
+                conversationHistory.push({
+                    role: 'model',
+                    parts: [{ text: JSON.stringify(aiResponse) }]
+                });
+
+                appendChatBubble('patient', aiResponse.reply, [], aiResponse.thinking_hint);
+                updateProgressDots(aiResponse.progress_stage || 1);
+
+                if (aiResponse.is_resolved) {
+                    isSolved = true;
+                    completedScenarioIds.add(currentScenario.id);
+                    updateOverallProgressUI();
+
+                    const totalDone = completedScenarioIds.size;
+                    const victoryTitle = document.getElementById('victory-title');
+                    const victoryDesc = document.getElementById('victory-desc');
+                    const victoryIconBox = document.getElementById('victory-icon-box');
+
+                    if (totalDone >= 2) {
+                        appendSystemBanner(`🏅 恭喜你，你已成為了樂華急救小先鋒！（已完成 ${totalDone} 項急救任務）`);
+                        victoryTitle.textContent = '🎉 恭喜你，你已成為了樂華急救小先鋒！';
+                        victoryDesc.textContent = `太棒了！你已成功完成 ${totalDone} 項急救任務，步驟安全、衛生且完全符合科學原理！`;
+                        victoryIconBox.className = 'w-12 h-12 rounded-full bg-amber-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0';
+                    } else {
+                        appendSystemBanner(`✅ 成功完成本項急救任務！（目前進度：1 / 2 項，再完成 1 項即可成為樂華急救小先鋒！）`);
+                        victoryTitle.textContent = '✅ 成功完成第 1 項急救任務！';
+                        victoryDesc.textContent = '表現非常出色！請點擊右側按鈕返回任務列表，再完成 1 項急救任務即可正式成為「樂華急救小先鋒」！';
+                        victoryIconBox.className = 'w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0';
+                    }
+
+                    document.getElementById('input-area').classList.add('hidden');
+                    document.getElementById('victory-banner').classList.remove('hidden');
+                    document.getElementById('scenario-badge').textContent = '處置完成';
+                    document.getElementById('scenario-badge').className = 'bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full';
+                } else {
+                    // 切換為蘇格拉底選項卡片模式
+                    document.getElementById('step-builder-panel').classList.add('hidden');
+                    document.getElementById('socratic-choices-panel').classList.remove('hidden');
+                    renderSocraticOptions(aiResponse.socratic_options);
+                }
+            } catch (error) {
+                removeLoadingBubble();
+                showToast('連線稍微不穩，請再試一次！', true);
+                conversationHistory.pop();
+                turnCount--;
+            } finally {
+                isWaitingAI = false;
+                document.getElementById('submit-btn').disabled = false;
+            }
+        }
+
+        // 支援 Enter 鍵送出
+        document.getElementById('student-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitAction();
+            }
+        });
+
+        async function callGeminiSocraticTutor() {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const systemInstruction = `
+你現在正在扮演香港小學常識科/人文科互動教學遊戲《樂華急救小先鋒》中的「傷者（${currentScenario.patientName}）」。
+當前情境：${currentScenario.title}（${currentScenario.description}）
+
+【核心教學規則（極重要，必須嚴格遵守）】：
+1. **絕對不要在對話中直接給出標準答案！**
+2. 採用「蘇格拉底式高階追問法（Socratic Questioning）」：
+   - 根據學生排出的「步驟順序」與選擇的「急救箱物品」，以傷者第一人稱作出反應。
+   - 針對學生的錯誤、遺漏（例如忘記先戴手套/清潔雙手、步驟順序顛倒、選錯棉花球、用火酒刺激傷口、用冰塊敷燙傷、按錯鼻樑骨等）或「雖然做對了但尚未解釋科學原理」的地方，提出尖銳且具啟發性的高階問題！
+3. **必須為學生生成 3 個「選擇題回答選項（socratic_options）」**：
+   - 因為小學生以「點選選項」方式作答，你每次追問時，都必須在 \`socratic_options\` 陣列中提供 **3 個具體的學生第一人稱回應選項**（長度約 15-35 字）。
+   - 這 3 個選項必須包含：
+     * **1 個真正符合急救衛生與科學原理的正確決定/解釋**（注意：不可在選項文字裡標註「正確」或「錯誤」，且正確選項的位置要隨機分配在 A、B、C 之間！）。
+     * **2 個常見小學生迷思或錯誤處置的誘答選項**（例如：「沒關係，直接用手幫你按住比較快」、「用火酒消毒殺菌力最強，痛一點沒關係」、「用冰塊直接敷降溫最快」等）。
+   - 如果學生剛才選錯了急救箱物品（例如選了脫脂棉花球或 75% 火酒），請提醒學生：「你可以在右側急救箱重新點選合適的物品，並選擇下方你的修正做法！」
+4. **過關條件（is_resolved = true）**：
+   - 只有當學生已經：(A) 體現衛生安全意識（戴手套/洗手）、(B) 選對正確急救物品與核心步驟順序、且 (C) 至少回答過一次你提出的高階原理追問並選對科學原理解釋時，才將 \`is_resolved\` 設為 \`true\`，並在 \`reply\` 中開心地感謝小先鋒的專業救援與清晰解釋！
+   - 一般情況下，一關至少需要 2 至 3 個回合的來回思辨對話才可過關，切勿第一回合就讓學生直接過關。
+5. 語言：使用繁體中文（符合香港小學教學用語，如「生理鹽水」、「無菌紗布」、「消毒膠布」、「流動清水」）。
+
+請務必以指定的 JSON 格式回覆。
+${currentScenario.pedagogicalFocus}
+            `.trim();
+
+            const payload = {
+                contents: conversationHistory,
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            reply: {
+                                type: "STRING",
+                                description: "傷者對學生處置的即時反應與蘇格拉底式高階追問（絕不直接洩漏標準答案）"
+                            },
+                            thinking_hint: {
+                                type: "STRING",
+                                description: "給學生的一個簡短思考方向提示（不可直接寫出答案）"
+                            },
+                            socratic_options: {
+                                type: "ARRAY",
+                                items: { type: "STRING" },
+                                description: "提供給學生點選的 3 個具體回應選項（包含 1 個正確科學原理解釋/修正做法，以及 2 個常見迷思誘答選項，順序隨機，不可標示對錯）"
+                            },
+                            progress_stage: {
+                                type: "INTEGER",
+                                description: "目前處置進度階段：1（初步評估/有待修正）、2（方向正確/正在深入原理思辨）、3（完全掌握並解決）"
+                            },
+                            is_resolved: {
+                                type: "BOOLEAN",
+                                description: "學生是否已完成所有正確處置並通過高階思維追問"
+                            }
+                        },
+                        required: ["reply", "thinking_hint", "socratic_options", "progress_stage", "is_resolved"]
+                    }
+                }
+            };
+
+            // 指數退避重試機制
+            const delays = [1000, 2000, 4000];
+            for (let attempt = 0; attempt <= delays.length; attempt++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!text) throw new Error("Empty response from model");
+                    
+                    return JSON.parse(text);
+                } catch (err) {
+                    if (attempt === delays.length) throw err;
+                    await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
