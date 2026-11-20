@@ -105,8 +105,8 @@
                 <span class="inline-block bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full mb-3">任務簡報</span>
                 <h2 class="text-2xl sm:text-3xl font-black text-slate-800 mb-3">準備好成為「樂華急救小先鋒」了嗎？</h2>
                 <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    在接下來的校園突發狀況中，傷者需要你的冷靜判斷！請先評估現場與衛生安全，從急救箱中挑選合適的物品，並配對正確的處理步驟。<br>
-                    <strong class="text-sky-700">考核要求：同學必須成功完成「最少兩項」不同的急救任務，並通過現場的高階思維追問，才能正式成為「樂華急救小先鋒」！</strong>
+                    挑選右側急救箱物品、配對正確步驟，並回答傷者的關鍵提問！<br>
+                    <strong class="text-sky-700">成功完成「最少兩項」急救任務，即可獲得「樂華急救小先鋒」稱號！</strong>
                 </p>
                 <!-- 資格進度條 -->
                 <div id="selector-status-box" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-700">
@@ -306,18 +306,16 @@
         // 1. 遊戲資料定義（急救箱物品與情境關卡）
         // ==========================================
         const FIRST_AID_ITEMS = [
-            { id: 'gloves', name: '即棄無菌手套', icon: '🧤', desc: '隔離體液，防止交叉感染' },
-            { id: 'saline', name: '生理鹽水', icon: '💧', desc: '溫和沖洗傷口污垢，不刺激組織' },
-            { id: 'antiseptic', name: '消毒藥水(碘伏/洗必泰)', icon: '🧴', desc: '殺滅傷口周圍細菌' },
-            { id: 'gauze', name: '無菌紗布敷料', icon: '🩹', desc: '覆蓋並保護傷口，不留纖維' },
-            { id: 'plaster', name: '無菌消毒膠布', icon: '🩹', desc: '適合小型割傷或擦傷覆蓋' },
-            { id: 'cotton', name: '普通脫脂棉花球', icon: '☁️', desc: '吸水性強，但易殘留棉絮纖維' },
-            { id: 'icepack', name: '冰袋 / 冷敷墊', icon: '🧊', desc: '減輕腫脹與疼痛（需隔毛巾使用）' },
-            { id: 'bandage', name: '彈性繃帶 / 三角巾', icon: '🎗️', desc: '固定敷料或承托扭傷部位' },
-            { id: 'tape', name: '醫用透氣膠紙', icon: '🧻', desc: '用於固定無菌紗布' },
-            { id: 'alcohol', name: '75% 消毒火酒', icon: '🧪', desc: '刺激性極強，適合器具消毒' },
-            { id: 'ointment', name: '不明藥膏 / 牙膏', icon: '🪥', desc: '民間偏方或非無菌外用膏' },
-            { id: 'water_tap', name: '現場流動清水(水龍頭)', icon: '🚰', desc: '大量持續降溫與沖洗（非箱內物品但可使用）' }
+            { id: 'gloves', name: '即棄無菌手套', icon: '🧤', desc: '防交叉感染' },
+            { id: 'saline', name: '生理鹽水', icon: '💧', desc: '溫和沖洗傷口' },
+            { id: 'antiseptic', name: '消毒藥水', icon: '🧴', desc: '殺滅傷口細菌' },
+            { id: 'gauze', name: '無菌紗布 / 膠布', icon: '🩹', desc: '覆蓋保護傷口' },
+            { id: 'cotton', name: '普通棉花球', icon: '☁️', desc: '易留棉絮纖維' },
+            { id: 'icepack', name: '冰袋 / 冷敷墊', icon: '🧊', desc: '冷敷消腫止痛' },
+            { id: 'bandage', name: '彈性繃帶 / 三角巾', icon: '🎗️', desc: '承托固定傷處' },
+            { id: 'alcohol', name: '75% 消毒火酒', icon: '🧪', desc: '刺激性極強' },
+            { id: 'ointment', name: '不明藥膏 / 牙膏', icon: '🪥', desc: '非無菌偏方' },
+            { id: 'water_tap', name: '流動清水(水龍頭)', icon: '🚰', desc: '持續沖洗降溫' }
         ];
 
         const SCENARIOS = [
@@ -327,26 +325,21 @@
                 category: '輕微割傷 / 擦傷',
                 difficulty: '初級挑戰 ⭐',
                 avatar: '🏃‍♂️',
-                patientName: '小樂（四年級同學）',
-                location: '學校操場跑道旁',
-                description: '小樂在跑步時不小心絆倒，右邊膝蓋擦破了皮，滲出一些血絲，傷口表面還沾有一點沙塵。他痛得坐在地上皺著眉頭。',
-                openingLine: '「哎呀好痛啊！我的膝蓋流血了，上面好像還有沙子……小先鋒，請幫我配對好急救步驟順序，並從右側急救箱挑選需要的物品！」',
+                patientName: '小樂（四年級）',
+                location: '學校操場',
+                description: '小樂跑步跌倒擦破右膝，傷口滲血並沾有沙塵。',
+                openingLine: '「哎呀好痛！膝蓋流血還有沙子，請幫我排好急救步驟並挑選右側物品！」',
                 stepPool: [
-                    { id: 'wash_hands_gloves', label: '清潔雙手並戴上即棄手套', icon: '🧤' },
-                    { id: 'rinse_wound', label: '沖洗傷口上的沙塵污垢', icon: '💧' },
+                    { id: 'wash_hands_gloves', label: '清潔雙手並戴上手套', icon: '🧤' },
+                    { id: 'rinse_wound', label: '沖洗傷口沙塵污垢', icon: '💧' },
                     { id: 'disinfect_wound', label: '用消毒藥水清潔傷口', icon: '🧴' },
-                    { id: 'cover_wound', label: '用敷料覆蓋保護傷口', icon: '🩹' },
-                    { id: 'blow_wound', label: '用嘴巴吹氣幫傷口止痛', icon: '💨' },
-                    { id: 'wipe_hard', label: '用力擦拭掉傷口血痂', icon: '🧽' }
+                    { id: 'cover_wound', label: '用無菌敷料覆蓋傷口', icon: '🩹' },
+                    { id: 'blow_wound', label: '用嘴巴吹氣幫傷口止痛', icon: '💨' }
                 ],
                 pedagogicalFocus: `
-                    【教學標準與高階追問重點】：
-                    1. 衛生安全原則：必須先強調「清潔雙手 / 戴上即棄手套」（體現自律與防感染）。若學生沒排在第一位或漏選，傷者要追問並提供反思選項！
-                    2. 處理順序：清洗（生理鹽水或清水沖走沙塵）➔ 消毒（溫和消毒藥水）➔ 覆蓋（無菌紗布或消毒膠布）。
-                    3. 常見迷思與高階追問：
-                       - 若學生選「普通脫脂棉花球」：追問「你用棉花球幫我抹傷口，但如果棉花纖維黏在傷口上怎麼辦？急救箱裡有更好的選擇嗎？」
-                       - 若學生選「75% 消毒火酒」直接擦傷口：追問「哇好刺痛！火酒刺激性這麼強，會不會破壞我傷口的新生細胞？有沒有更溫和的選擇？」
-                       - 若學生第一步全部排對：也要進行一輪「高階原理追問」，例如追問「為什麼一定要『先戴手套』以及『先沖洗再覆蓋』，而不是直接貼膠布？」並提供 3 個誘答選項（包含常見迷思選項與正確科學原理選項）。
+                    【精簡教學重點】：
+                    1. 衛生原則：先戴手套；處理順序：清洗（生理鹽水）➔ 消毒 ➔ 覆蓋（無菌紗布/膠布）。
+                    2. 追問重點：若選棉花球追問棉絮黏傷口；若選火酒追問太刺激；若全對則追問「為什麼要先戴手套並用生理鹽水沖洗，而不用棉花球擦拭？」。
                 `
             },
             {
@@ -356,76 +349,66 @@
                 difficulty: '中級挑戰 ⭐⭐',
                 avatar: '🥵',
                 patientName: '陳同學（五年級）',
-                location: '學校醫療室外的茶水間',
-                description: '陳同學倒溫熱水時不小心灑在左手手背上，手背立刻變得紅紅的，感覺火辣辣地痛，手腕上還戴著一隻電子手錶。',
-                openingLine: '「好燙好燙！我的手背好辣！請先幫我配對正確的處理順序，並從右側選擇要用的物品或現場設備！」',
+                location: '茶水間',
+                description: '陳同學左手背被熱水燙紅發痛，手腕上還戴著手錶。',
+                openingLine: '「好燙好辣！請先幫我排好處理順序，並選擇要用的物品！」',
                 stepPool: [
-                    { id: 'flush_water', label: '用流動清水沖洗 10-15 分鐘', icon: '🚰' },
-                    { id: 'remove_watch', label: '小心除去手腕上的電子手錶', icon: '⌚' },
-                    { id: 'cover_clean', label: '用清潔無菌敷料輕輕覆蓋', icon: '🩹' },
-                    { id: 'apply_ice', label: '直接用冰塊敷在燙傷紅腫處', icon: '🧊' },
-                    { id: 'apply_toothpaste', label: '塗上藥膏或牙膏降溫散熱', icon: '🪥' },
-                    { id: 'pop_blister', label: '如果起水泡立刻刺破擠出水', icon: '📌' }
+                    { id: 'flush_water', label: '流動清水沖洗 10-15 分鐘', icon: '🚰' },
+                    { id: 'remove_watch', label: '小心除去手腕上的手錶', icon: '⌚' },
+                    { id: 'cover_clean', label: '用清潔無菌敷料覆蓋', icon: '🩹' },
+                    { id: 'apply_ice', label: '直接用冰塊敷在燙傷處', icon: '🧊' },
+                    { id: 'apply_toothpaste', label: '塗上藥膏或牙膏降溫', icon: '🪥' }
                 ],
                 pedagogicalFocus: `
-                    【教學標準與高階追問重點】：
-                    1. 核心三步驟：沖（流動清水沖洗 10-15 分鐘降溫）➔ 脫（小心除去手錶/飾物，若衣物黏連切勿強行撕開）➔ 蓋（清潔無菌敷料覆蓋）。
-                    2. 關鍵高階追問（必考原理）：
-                       - 追問：「為什麼處理燙傷時必須先用流動清水沖洗 10-15 分鐘，而不能直接用冰塊敷在傷口上？」（選項中應包含：A. 冰塊溫度過低會引致凍傷及血管急劇收縮，加劇皮膚組織受損 [正確]；B. 冰塊太硬會壓扁水泡 [干擾項]；C. 清水沖洗比較省錢方便 [干擾項]）。
-                       - 若學生漏掉「除去手錶」，追問：「我的手背開始腫脹了，手腕上的手錶不拿下來會有什麼危險？」
+                    【精簡教學重點】：
+                    1. 核心步驟：沖（流動清水 10-15 分鐘）➔ 脫（小心除去手錶）➔ 蓋（清潔敷料）。
+                    2. 追問重點：必問「為什麼必須用流動清水沖洗，而不能直接用冰塊敷在傷口上？」（引導理解：冰塊會引致凍傷及血管急劇收縮，加劇組織受損）。
                 `
             },
             {
                 id: 'sprain_bruise',
-                title: '籃球場跳起落地扭傷腳踝',
+                title: '籃球場落地扭傷腳踝',
                 category: '扭傷與撞傷處理',
                 difficulty: '中級挑戰 ⭐⭐',
                 avatar: '🏀',
-                patientName: '阿華（六年級籃球隊員）',
-                location: '學校有蓋操場籃球場',
-                description: '阿華搶籃板落地時右腳踝「啪」一聲扭到了，小腿也撞到了旁邊的長椅，現在腳踝腫了起來，一踩地就劇痛。',
-                openingLine: '「嘶……我的右腳踝好痛，好像腫起來了！請配對你的處理步驟並挑選右側急救箱物品幫我處理！」',
+                patientName: '阿華（六年級）',
+                location: '籃球場',
+                description: '阿華跳起落地扭傷右腳踝，腳踝紅腫劇痛。',
+                openingLine: '「嘶……右腳踝好痛又腫起來了！請幫我配對處理步驟和物品！」',
                 stepPool: [
-                    { id: 'rest_support', label: '停止運動並承托固定受傷腳踝', icon: '🎗️' },
+                    { id: 'rest_support', label: '停止運動並承托受傷部位', icon: '🎗️' },
                     { id: 'cold_compress', label: '使用冰袋進行冷敷消腫', icon: '🧊' },
-                    { id: 'massage_ankle', label: '用力揉按腫脹處幫助散瘀', icon: '👐' },
+                    { id: 'massage_ankle', label: '用力揉按腫脹處散瘀', icon: '👐' },
                     { id: 'hot_compress', label: '熱敷促進血液循環', icon: '♨️' },
-                    { id: 'walk_test', label: '試著單腳跳或用力踩地測試', icon: '🦶' },
-                    { id: 'clean_gloves', label: '先評估現場安全並安撫傷者', icon: '🛡️' }
+                    { id: 'walk_test', label: '試著用力踩地測試', icon: '🦶' }
                 ],
                 pedagogicalFocus: `
-                    【教學標準與高階追問重點】：
-                    1. 核心原則：扭傷需「承托受傷部位（休息固定）」➔「冷敷」；撞傷需「冷敷」。
-                    2. 常見迷思與高階追問：
-                       - 針對「揉一揉/熱敷」或冷敷原理：追問「剛扭傷時微絲血管正在破裂出血，為什麼我們要選擇『承托與冷敷』而不是『揉按或熱敷』？」
-                       - 針對「冷敷」安全細節：追問「把冰袋直接貼在皮膚上冷敷二十分鐘會有什麼問題？應該怎麼做？」
+                    【精簡教學重點】：
+                    1. 核心原則：扭傷需「承托受傷部位」➔「冷敷」；撞傷需「冷敷」。
+                    2. 追問重點：追問「剛扭傷時微絲血管正在出血，為什麼要『承托與冷敷』而不是『揉按或熱敷』？」（或冷敷時為何要隔毛巾避免凍傷）。
                 `
             },
             {
                 id: 'nosebleed',
-                title: '炎熱天氣操場集隊流鼻血',
+                title: '操場集隊突然流鼻血',
                 category: '流鼻血緊急處理',
                 difficulty: '進階挑戰 ⭐⭐⭐',
                 avatar: '🩸',
-                patientName: '美美（三年級同學）',
+                patientName: '美美（三年級）',
                 location: '學校操場',
-                description: '天氣乾燥炎熱，美美集隊時突然流鼻血，鮮血順著鼻孔流下來，她緊張得想把頭往後仰。',
-                openingLine: '「嗚……我流鼻血了！請你配對正確的處理步驟，告訴我應該怎麼做！」',
+                description: '天氣炎熱乾燥，美美集隊時突然流鼻血，緊張得想把頭後仰。',
+                openingLine: '「嗚……我流鼻血了！請配對正確的處理步驟幫幫我！」',
                 stepPool: [
-                    { id: 'wear_gloves', label: '戴上即棄無菌手套做好防護', icon: '🧤' },
-                    { id: 'lean_forward', label: '坐下並將身體及頭部微微前傾', icon: '🙇‍♀️' },
-                    { id: 'pinch_soft', label: '用手指捏住鼻翼兩側軟骨 10 分鐘', icon: '🤏' },
-                    { id: 'tilt_back', label: '把頭向後仰防止鼻血滴落地上', icon: '🙄' },
-                    { id: 'pinch_bridge', label: '用力按壓兩眼之間的鼻樑硬骨', icon: '👃' },
-                    { id: 'stuff_cotton', label: '把棉花球緊緊塞進鼻孔裡止血', icon: '☁️' }
+                    { id: 'wear_gloves', label: '戴上即棄無菌手套防護', icon: '🧤' },
+                    { id: 'lean_forward', label: '坐下並將頭部微微前傾', icon: '🙇‍♀️' },
+                    { id: 'pinch_soft', label: '捏住鼻翼兩側軟骨 10 分鐘', icon: '🤏' },
+                    { id: 'tilt_back', label: '把頭向後仰防止鼻血滴落', icon: '🙄' },
+                    { id: 'pinch_bridge', label: '用力按壓鼻樑硬骨處', icon: '👃' }
                 ],
                 pedagogicalFocus: `
-                    【教學標準與高階追問重點】：
-                    1. 正確姿勢：戴手套防護 ➔ 坐下、身體微微向前傾（切勿後仰）、張口呼吸 ➔ 捏住「鼻翼兩側（軟骨部位）」持續 10 分鐘。
-                    2. 高階追問：
-                       - 若學生選「頭向後仰」或「按住鼻樑硬骨」：追問「你現在幫我按住鼻樑骨（或讓我頭向後仰），為什麼血還是止不住，甚至流進喉嚨裡？」
-                       - 若學生選「棉花球塞進鼻孔」：追問「如果把棉花球塞進鼻孔，等一下血乾了拔出來時會發生什麼事？」
-                       - 即使排對，也要追問：「為什麼要捏住『鼻翼兩側軟骨』而不是『鼻樑硬骨』，而且頭要『微微前傾』？」
+                    【精簡教學重點】：
+                    1. 正確姿勢：戴手套 ➔ 坐下頭部微微前傾 ➔ 捏住「鼻翼兩側軟骨」10 分鐘。
+                    2. 追問重點：追問「為什麼要捏住『鼻翼軟骨』且頭『微微前傾』，而不是按壓鼻樑骨或頭向後仰？」。
                 `
             }
         ];
@@ -978,87 +961,64 @@ ${studentActionSummary}
 你現在正在扮演香港小學常識科/人文科互動教學遊戲《樂華急救小先鋒》中的「傷者（${currentScenario.patientName}）」。
 當前情境：${currentScenario.title}（${currentScenario.description}）
 
-【核心教學規則（極重要，必須嚴格遵守）】：
-1. **絕對不要在對話中直接給出標準答案！**
-2. 採用「蘇格拉底式高階追問法（Socratic Questioning）」：
-   - 根據學生排出的「步驟順序」與選擇的「急救箱物品」，以傷者第一人稱作出反應。
-   - 針對學生的錯誤、遺漏（例如忘記先戴手套/清潔雙手、步驟順序顛倒、選錯棉花球、用火酒刺激傷口、用冰塊敷燙傷、按錯鼻樑骨等）或「雖然做對了但尚未解釋科學原理」的地方，提出尖銳且具啟發性的高階問題！
-3. **必須為學生生成 3 個「選擇題回答選項（socratic_options）」**：
-   - 因為小學生以「點選選項」方式作答，你每次追問時，都必須在 \`socratic_options\` 陣列中提供 **3 個具體的學生第一人稱回應選項**（長度約 15-35 字）。
-   - 這 3 個選項必須包含：
-     * **1 個真正符合急救衛生與科學原理的正確決定/解釋**（注意：不可在選項文字裡標註「正確」或「錯誤」，且正確選項的位置要隨機分配在 A、B、C 之間！）。
-     * **2 個常見小學生迷思或錯誤處置的誘答選項**（例如：「沒關係，直接用手幫你按住比較快」、「用火酒消毒殺菌力最強，痛一點沒關係」、「用冰塊直接敷降溫最快」等）。
-   - 如果學生剛才選錯了急救箱物品（例如選了脫脂棉花球或 75% 火酒），請提醒學生：「你可以在右側急救箱重新點選合適的物品，並選擇下方你的修正做法！」
-4. **過關條件（is_resolved = true）**：
-   - 只有當學生已經：(A) 體現衛生安全意識（戴手套/洗手）、(B) 選對正確急救物品與核心步驟順序、且 (C) 至少回答過一次你提出的高階原理追問並選對科學原理解釋時，才將 \`is_resolved\` 設為 \`true\`，並在 \`reply\` 中開心地感謝小先鋒的專業救援與清晰解釋！
-   - 一般情況下，一關至少需要 2 至 3 個回合的來回思辨對話才可過關，切勿第一回合就讓學生直接過關。
-5. 語言：使用繁體中文（符合香港小學教學用語，如「生理鹽水」、「無菌紗布」、「消毒膠布」、「流動清水」）。
+【精簡快節奏教學規則（確保學生 3 分鐘內完成本關）】：
+1. **簡短精煉，不直接給答案**：每次 \`reply\` 限制在 **50 字以內（約 2 句話）**，語氣親切自然，針對學生的選擇提出一個核心蘇格拉底式追問。
+2. **生成 3 個簡短回答選項（socratic_options）**：
+   - 每個選項控制在 **12 至 22 字以內**，方便小學生快速閱讀點選。
+   - 包含 **1 個真正符合急救衛生與科學原理的正確決定/解釋**（位置隨機，不可標註對錯）與 **2 個常見迷思誘答選項**。
+3. **兩回合明快通關機制（is_resolved）**：
+   - 第 1 回合（學生剛排完步驟）：無論學生排對或有小錯，都先提出 **1 個最核心的關鍵追問**（若物品或步驟有明顯錯誤，請在追問中引導修正，並把 \`progress_stage\` 設為 2）。
+   - 第 2 回合起：只要學生在追問選項中選對了正確的科學原理解釋（且無嚴重危險動作），請**立即將 \`is_resolved\` 設為 \`true\` 並將 \`progress_stage\` 設為 3**，給予簡短熱情的肯定，讓學生快速通關！
+4. 語言：使用繁體中文（香港小學教學用語）。
 
 請務必以指定的 JSON 格式回覆。
 ${currentScenario.pedagogicalFocus}
             `.trim();
 
+            const responseSchema = {
+                type: "OBJECT",
+                properties: {
+                    reply: { type: "STRING" },
+                    thinking_hint: { type: "STRING" },
+                    socratic_options: {
+                        type: "ARRAY",
+                        items: { type: "STRING" }
+                    },
+                    is_resolved: { type: "BOOLEAN" },
+                    progress_stage: { type: "INTEGER" }
+                },
+                required: ["reply", "thinking_hint", "socratic_options", "is_resolved", "progress_stage"]
+            };
+
             const payload = {
-                contents: conversationHistory,
                 systemInstruction: {
                     parts: [{ text: systemInstruction }]
                 },
+                contents: conversationHistory,
                 generationConfig: {
                     responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            reply: {
-                                type: "STRING",
-                                description: "傷者對學生處置的即時反應與蘇格拉底式高階追問（絕不直接洩漏標準答案）"
-                            },
-                            thinking_hint: {
-                                type: "STRING",
-                                description: "給學生的一個簡短思考方向提示（不可直接寫出答案）"
-                            },
-                            socratic_options: {
-                                type: "ARRAY",
-                                items: { type: "STRING" },
-                                description: "提供給學生點選的 3 個具體回應選項（包含 1 個正確科學原理解釋/修正做法，以及 2 個常見迷思誘答選項，順序隨機，不可標示對錯）"
-                            },
-                            progress_stage: {
-                                type: "INTEGER",
-                                description: "目前處置進度階段：1（初步評估/有待修正）、2（方向正確/正在深入原理思辨）、3（完全掌握並解決）"
-                            },
-                            is_resolved: {
-                                type: "BOOLEAN",
-                                description: "學生是否已完成所有正確處置並通過高階思維追問"
-                            }
-                        },
-                        required: ["reply", "thinking_hint", "socratic_options", "progress_stage", "is_resolved"]
-                    }
+                    responseSchema: responseSchema,
+                    temperature: 0.5
                 }
             };
 
-            // 指數退避重試機制
-            const delays = [1000, 2000, 4000];
-            for (let attempt = 0; attempt <= delays.length; attempt++) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!text) throw new Error("Empty response from model");
-                    
-                    return JSON.parse(text);
-                } catch (err) {
-                    if (attempt === delays.length) throw err;
-                    await new Promise(resolve => setTimeout(resolve, delays[attempt]));
-                }
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
             }
+
+            const data = await response.json();
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!rawText) {
+                throw new Error('Empty response from AI');
+            }
+
+            return JSON.parse(rawText);
         }
     </script>
 </body>
